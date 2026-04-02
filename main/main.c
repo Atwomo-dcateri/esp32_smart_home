@@ -4,6 +4,9 @@
 #include "nvs_flash.h"
 #include "esp_log.h"
 #include "bsp_led.h"
+#include "bsp_button.h"
+#include "bsp_sensor.h"
+
 
 static const char *TAG = "MAIN";
 void app_main(void)
