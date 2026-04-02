@@ -1,8 +1,7 @@
-#include <stdio.h>
 #include "bsp_button.h"
 #include "driver/gpio.h"
-#include "freertos/queue.h"
 #include "freertos/FreeRTOS.h"
+#include "freertos/queue.h"
 
 
 #define BIN_GPIO 6
