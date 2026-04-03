@@ -6,43 +6,56 @@
 #include "bsp_led.h"
 #include "bsp_button.h"
 #include "bsp_sensor.h"
+#include "mqtt_handler.h"
+#include "wifi_manger.h"
+
 
 static const char *TAG = "APP_MAIN";
 QueueHandle_t gpio_evt_queue = NULL;
 
-void logic_task(void* arg) {
+void logic_task(void *arg) {
+
     uint32_t io_num;
     float temp, humi;
+
+    ESP_LOGI(TAG, "Wating for WiFi...");
+
+    mqtt_app_start();
 
     for (;;) {
 
         if (xQueueReceive(gpio_evt_queue, &io_num, portMAX_DELAY))
-        {
-            ESP_LOGI(TAG, "Event: Button Pressed! Triggring Sample...");
-
+        {   
             if (bsp_dht_read(&temp, &humi) == ESP_OK)
             {
-                ESP_LOGW(TAG, "Sensor Data -> Temp: %.1f°C, Humi: %.1f%%", temp, humi);
-    
-            }
+                ESP_LOGW(TAG, "Local Read -> T:%.1f, H:%.1f", temp, humi);
 
-            bsp_led_set_breath((uint32_t)8191);// bit数为13位，最大值为8191
-            vTaskDelay(pdMS_TO_TICKS(500));
-            bsp_led_set_breath((uint32_t)0);
+                mqtt_send_sensor_data(temp, humi);
+                bsp_led_set_breath(5000);
+                vTaskDelay(pdMS_TO_TICKS(500));
+                bsp_led_set_breath(0);
+            }   
         }
-        
     }
 }
 
 void app_main(void) {
 
-    ESP_ERROR_CHECK(nvs_flash_init());
+    esp_err_t ret = nvs_flash_init();
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        ret = nvs_flash_init();
+    }
+    ESP_ERROR_CHECK(ret);
 
-    bsp_led_init();
+    wifi_init_sta(); // 启动wifi
+
+    wifi_wait_connected(); // 等待wifi连接
+    bsp_led_init(); // 启动LED
 
     gpio_evt_queue = xQueueCreate(10, sizeof(uint32_t));
 
-    bsp_button_init();
+    bsp_button_init(); // 启动按键
 
     xTaskCreate(logic_task, "logic_task", 4096, NULL, 10, NULL);
     ESP_LOGI(TAG, "Smart Home Terminal Ready. Press the Button to Sample.");

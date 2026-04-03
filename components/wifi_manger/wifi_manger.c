@@ -13,7 +13,7 @@
 #include "esp_wifi.h"
 #include "esp_log.h"
 
-/* 你的业务头文件 */
+/* 业务头文件 */
 #include "wifi_manger.h"
 
 
@@ -26,8 +26,10 @@ static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_
     if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) 
     {
         esp_wifi_connect();
-    } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP)
-    {
+    } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
+        ESP_LOGW(TAG, "Connect failed/disconnected. Retrying...");
+        esp_wifi_connect(); // 只有这一行能让它从失败中恢复
+    } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
         ip_event_got_ip_t *event = (ip_event_got_ip_t *)event_data;
         ESP_LOGI(TAG, "GOT_IP: " IPSTR, IP2STR(&event->ip_info.ip));
         xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTION_BIT);
@@ -50,7 +52,7 @@ void wifi_init_sta(void) {
     wifi_config_t wifi_config = {
 
         .sta = {
-            .ssid = "wokmi-GUEST",
+            .ssid = "Wokwi-GUEST",
             .password = "",
         }
     };
@@ -59,4 +61,13 @@ void wifi_init_sta(void) {
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
     ESP_ERROR_CHECK(esp_wifi_start());
 
+}
+
+void wifi_wait_connected(void) {
+    // 阻塞等待 BIT0 (WIFI_CONNECTION_BIT)
+    // pdFALSE: 退出时不清除位
+    // pdTRUE: 等待所有指定的位
+    // portMAX_DELAY: 永久等待
+
+    xEventGroupWaitBits(s_wifi_event_group, WIFI_CONNECTION_BIT, pdFALSE, pdTRUE, portMAX_DELAY);
 }

@@ -14,6 +14,8 @@ void mqtt_app_start(void)
     esp_mqtt_client_config_t mqtt_cfg = {
 
         .broker.address.uri = "mqtt://broker.emqx.io",
+        //.broker.address.uri = "wss://broker.emqx.io:8084",
+
     };
 
     client = esp_mqtt_client_init(&mqtt_cfg);
