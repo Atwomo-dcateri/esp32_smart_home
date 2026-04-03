@@ -26,9 +26,9 @@ void logic_task(void* arg) {
     
             }
 
-            bsp_led_set_breath(8981);
+            bsp_led_set_breath((uint32_t)8191);// bit数为13位，最大值为8191
             vTaskDelay(pdMS_TO_TICKS(500));
-            bsp_led_set_breath(0);
+            bsp_led_set_breath((uint32_t)0);
         }
         
     }
