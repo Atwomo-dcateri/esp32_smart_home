@@ -20,7 +20,7 @@ void logic_task(void *arg) {
 
     ESP_LOGI(TAG, "Wating for WiFi...");
 
-    mqtt_app_start();
+     mqtt_app_start();
 
     for (;;) {
 
