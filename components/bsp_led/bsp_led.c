@@ -25,14 +25,21 @@ void bsp_led_init(void) {
         .hpoint = 0
     };
 
-    ledc_channel_config(&ledc_channel);
-    ledc_fade_func_install(0);
+    ledc_channel_config(&ledc_channel); 
+    // ledc_fade_func_install(0); 不用注册硬件中断
 }
 
 
-void bsp_led_set_breath(uint32_t duty) {
+// void bsp_led_set_breath(uint32_t duty) {
 
-    ledc_set_fade_with_time(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, duty, 500);
-    ledc_fade_start(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, LEDC_FADE_NO_WAIT);
+//     ledc_set_fade_with_time(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, duty, 500);
+//     ledc_fade_start(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, LEDC_FADE_NO_WAIT);
     
+// } iram太小，无法处理这个中断，放入flash后，执行太慢，触发看门狗导致程序崩溃
+
+
+void bsp_led_set_smple(uint32_t duty) {
+
+    ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0, duty);
+    ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_0);
 }

@@ -4,6 +4,7 @@
 
 
 void bsp_led_init(void);
-void bsp_led_set_breath(uint32_t duty);
+//void bsp_led_set_breath(uint32_t duty);
+void bsp_led_set_smple(uint32_t duty);
 
 #endif

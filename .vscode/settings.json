@@ -13,5 +13,6 @@
     "--background-index",
     "--query-driver=**",
     "--compile-commands-dir=c:\\Users\\Surface\\project\\esp32_smart_home1\\esp32_smart_home1\\build"
-  ]
+  ],
+  "idf.flashType": "UART"
 }

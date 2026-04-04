@@ -1,8 +1,6 @@
-#include <stdio.h>
 #include "bsp_sensor.h"
 #include "driver/gpio.h"
-#include "rom/ets_sys.h"
-
+#include "esp_rom_sys.h"
 
 #define DHT_GPIO 4
 
