@@ -16,18 +16,19 @@ QueueHandle_t gpio_evt_queue = NULL;
 
 void logic_task(void *arg)
 {
-
+    
     uint32_t io_num;
     float temp, humi;
-    bsp_display_i2c_init();
-
+    bsp_display_init(); // 
+    ESP_LOGI(TAG, "Wating for UI...");
+    setup_ui(); // 
     ESP_LOGI(TAG, "Wating for WiFi...");
 
     mqtt_app_start();
 
     for (;;)
     {
-
+        vTaskDelay(pdMS_TO_TICKS(10));
         if (xQueueReceive(gpio_evt_queue, &io_num, portMAX_DELAY))
         {
             if (bsp_dht_read(&temp, &humi) == ESP_OK)
@@ -47,7 +48,9 @@ void logic_task(void *arg)
                 vTaskDelay(pdMS_TO_TICKS(500));
                 bsp_led_set_smple(0);
             }
+            
         }
+
     }
 }
 
@@ -61,12 +64,12 @@ void app_main(void)
         ret = nvs_flash_init();
     }
     ESP_ERROR_CHECK(ret);
-
+    
     wifi_init_sta(); // 启动wifi
 
     wifi_wait_connected(); // 等待wifi连接
     bsp_led_init();        // 启动LED
-
+    
     gpio_evt_queue = xQueueCreate(10, sizeof(uint32_t));
 
     bsp_button_init(); // 启动按键
@@ -74,3 +77,14 @@ void app_main(void)
     xTaskCreate(logic_task, "logic_task", 8192, NULL, 10, NULL);
     ESP_LOGI(TAG, "Smart Home Terminal Ready. Press the Button to Sample.");
 }
+
+
+// #include <stdio.h>
+// #include "driver/i2c.h"
+// #include "esp_log.h"
+// #include "bsp_display.h"
+
+// void app_main(void) {
+    
+//     bsp_display_init();
+// }

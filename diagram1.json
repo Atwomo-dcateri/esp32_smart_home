@@ -12,7 +12,7 @@
       "left": 37.85,
       "rotate": 90,
       "attrs": { "value": "1000" }
-    },
+    },  
     {
       "type": "wokwi-pushbutton",
       "id": "btn1",
