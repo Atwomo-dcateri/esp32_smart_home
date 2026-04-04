@@ -8,7 +8,7 @@
 
 extern QueueHandle_t gpio_evt_queue;
 
-static void IRAM_ATTR gpio_isr_handler(void *arg) {
+static void gpio_isr_handler(void *arg) {
 
     uint32_t gpio_num = (uint32_t) arg;
     xQueueSendFromISR(gpio_evt_queue, &gpio_num, NULL);

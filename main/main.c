@@ -31,10 +31,12 @@ void logic_task(void *arg) {
                 ESP_LOGW(TAG, "Local Read -> T:%.1f, H:%.1f", temp, humi);
 
                 mqtt_send_sensor_data(temp, humi);
-                bsp_led_set_breath(5000);
+                //bsp_led_set_breath(1000);
+                bsp_led_set_smple(1000);
                 vTaskDelay(pdMS_TO_TICKS(500));
-                bsp_led_set_breath(0);
-            }   
+                //bsp_led_set_breath(0);
+                bsp_led_set_smple(0);
+            }
         }
     }
 }
@@ -57,6 +59,6 @@ void app_main(void) {
 
     bsp_button_init(); // 启动按键
 
-    xTaskCreate(logic_task, "logic_task", 4096, NULL, 10, NULL);
+    xTaskCreate(logic_task, "logic_task", 8192, NULL, 10, NULL);
     ESP_LOGI(TAG, "Smart Home Terminal Ready. Press the Button to Sample.");
 }

@@ -21,7 +21,13 @@
 static EventGroupHandle_t s_wifi_event_group;
 static const char *TAG = "WIFI_MGR";
 
+/// @brief 事件处理函数，负责连接wifi
+/// @param arg 
+/// @param event_base 
+/// @param event_id 
+/// @param event_data 
 static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void* event_data) {
+
 
     if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_START) 
     {
@@ -35,7 +41,8 @@ static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_
         xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTION_BIT);
     }
 }
-
+/// @brief 完成wifi station模式设置
+/// @param  
 void wifi_init_sta(void) {
 
     s_wifi_event_group = xEventGroupCreate();
@@ -56,13 +63,16 @@ void wifi_init_sta(void) {
             .password = "",
         }
     };
-
+    
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
     ESP_ERROR_CHECK(esp_wifi_start());
 
 }
 
+
+/// @brief 阻塞当前任务等待WiFi连接成功
+/// @param  
 void wifi_wait_connected(void) {
     // 阻塞等待 BIT0 (WIFI_CONNECTION_BIT)
     // pdFALSE: 退出时不清除位
