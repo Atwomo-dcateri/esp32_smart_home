@@ -11,5 +11,8 @@
 
 void bsp_display_init();
 void setup_ui(void);
+void bsp_display_update_data(float temp, float humi) ;
+void bsp_display_show_status(const char *status);
 
 #endif
+

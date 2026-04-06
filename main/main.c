@@ -37,12 +37,9 @@ void logic_task(void *arg)
 
                 mqtt_send_sensor_data(temp, humi);
 
-                char buf[32];
-                sprintf(buf, "T: %.1f C", temp);
-                //oled_show(0, 16, buf);
+                // char buf[32];
 
-                sprintf(buf, "H: %.1f %%", humi);
-                //oled_show(0, 32, buf);
+                bsp_display_update_data(temp, humi);
 
                 bsp_led_set_smple(1000);
                 vTaskDelay(pdMS_TO_TICKS(500));
@@ -77,6 +74,7 @@ void app_main(void)
     xTaskCreate(logic_task, "logic_task", 8192, NULL, 10, NULL);
     ESP_LOGI(TAG, "Smart Home Terminal Ready. Press the Button to Sample.");
 }
+
 
 
 // #include <stdio.h>
