@@ -10,6 +10,7 @@
 #include "lvgl.h"                  // LVGL 图形库（lv_obj/lv_label 等）
 #include "bsp_display.h"
 #include "bsp_storage.h"
+#include "esp_http_ota.h"
 
 #include "mqtt_handler.h"
 
@@ -110,6 +111,15 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
                 esp_wifi_disconnect();
                 esp_wifi_stop();
                 lv_delay_ms(100);
+            } else if(strncmp(event->data, "UPDATE", event->data_len)) {
+
+                if (lvgl_port_lock(0))
+                {
+                    lv_label_set_text(ui_temp_label, "Updating...\nDo Not Power Off");
+                    lvgl_port_unlock();
+                }
+
+                xTaskCreate(&ota_task, "ota_task", 8192, NULL, 5, NULL);
             }
             break;
         case MQTT_EVENT_ERROR:

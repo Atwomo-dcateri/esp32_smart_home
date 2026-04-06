@@ -7,7 +7,8 @@ idf_component_register(
         lvgl
         esp_lvgl_port 
         ssd1306
-        bsp_display
+        bsp_display 
         esp_wifi
         bsp_storage
+        esp_http_ota
 )

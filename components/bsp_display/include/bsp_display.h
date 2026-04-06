@@ -11,17 +11,18 @@
 #include "esp_system.h"            // 系统接口（保留）
 #include "lvgl.h"                  // LVGL 图形库（lv_obj/lv_label 等）
 
-#define I2C_BUS_PORT            0
-#define LCD_PIXEL_CLOCK_HZ      (100 * 1000)
-#define LCD_PIN_NUM_SDA         1
-#define LCD_PIN_NUM_SCL         2
-#define LCD_H_RES               128
-#define LCD_V_RES               64
-#define LCD_ADRR                0X3C  // 0x3C通常
+#define I2C_BUS_PORT 0
+#define LCD_PIXEL_CLOCK_HZ (100 * 1000)
+#define LCD_PIN_NUM_SDA 1
+#define LCD_PIN_NUM_SCL 2
+#define LCD_H_RES 128
+#define LCD_V_RES 64
+#define LCD_ADRR 0X3C // 0x3C通常
 
 extern lv_obj_t *ui_mqtt_icon;
 extern lv_obj_t *ui_wifi_icon;
 extern bool is_lvgl_ready;
+extern lv_obj_t *ui_temp_label;
 
 void bsp_display_init();
 void setup_ui(void);
@@ -30,4 +31,3 @@ void bsp_display_show_status(const char *status);
 void bsp_display_pro_ui_init(void);
 
 #endif
-
