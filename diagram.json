@@ -17,7 +17,7 @@
       "type": "wokwi-pushbutton",
       "id": "btn1",
       "top": 131,
-      "left": -28.8,
+      "left": -48,
       "attrs": { "color": "blue", "xray": "1" }
     },
     {
@@ -26,6 +26,13 @@
       "top": -64.06,
       "left": 144.23,
       "attrs": { "i2cAddress": "0x3c" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn2",
+      "top": 198.2,
+      "left": -48,
+      "attrs": { "color": "green", "xray": "1" }
     }
   ],
   "connections": [
@@ -39,7 +46,9 @@
     [ "oled1:GND", "esp:GND.2", "black", [ "v-28.8", "h115.2", "v182.4" ] ],
     [ "oled1:VCC", "esp:3V3.1", "red", [ "v-28.8", "h-95.85", "v182.4" ] ],
     [ "oled1:SDA", "esp:1", "green", [ "v-28.8", "h115.27", "v201.6" ] ],
-    [ "oled1:SCL", "esp:2", "green", [ "v-28.8", "h153.9", "v220.8", "h-115.2" ] ]
+    [ "oled1:SCL", "esp:2", "green", [ "v-28.8", "h153.9", "v220.8", "h-115.2" ] ],
+    [ "btn2:1.r", "esp:3", "green", [ "v0" ] ],
+    [ "btn2:2.r", "esp:GND.1", "green", [ "h9.8", "v67.4" ] ]
   ],
   "dependencies": {}
 }

@@ -4,6 +4,7 @@
 #include "nvs_flash.h"
 #include "esp_log.h"
 #include "bsp_led.h"
+#include "esp_wifi.h"
 #include "bsp_button.h"
 #include "bsp_sensor.h"
 #include "mqtt_handler.h"
@@ -12,7 +13,9 @@
 
 static const char *TAG = "APP_MAIN";
 QueueHandle_t gpio_evt_queue = NULL;
-// void oled_show(uint8_t x, uint8_t y, char *buf);
+void oled_show(uint8_t x, uint8_t y, char *buf);
+
+static uint8_t wifi_count = 0;
 
 void logic_task(void *arg)
 {
@@ -21,14 +24,16 @@ void logic_task(void *arg)
     float temp, humi;
     bsp_display_init(); // 
     ESP_LOGI(TAG, "Wating for UI...");
-    setup_ui(); // 
+    // setup_ui(); //
+    bsp_display_pro_ui_init();
     ESP_LOGI(TAG, "Wating for WiFi...");
 
     mqtt_app_start();
 
     for (;;)
     {
-        vTaskDelay(pdMS_TO_TICKS(10));
+        
+        //if (xQueueReceive(gpio_evt_queue, &io_num, pdTICKS_TO_MS(100)))
         if (xQueueReceive(gpio_evt_queue, &io_num, portMAX_DELAY))
         {
             if (bsp_dht_read(&temp, &humi) == ESP_OK)
@@ -45,11 +50,41 @@ void logic_task(void *arg)
                 vTaskDelay(pdMS_TO_TICKS(500));
                 bsp_led_set_smple(0);
             }
-            
+
+            if (io_num == 3 && wifi_count == 0)
+            {
+                wifi_count = 1;
+                ESP_LOGI("WIFI CONTROL", "Stop WIFI...");
+                esp_wifi_disconnect();
+                esp_wifi_stop();
+                vTaskDelay(pdMS_TO_TICKS(100));
+            }
+            else if (io_num == 3 && wifi_count == 1)
+            {
+                wifi_count = 0;
+                ESP_LOGI("WIFI CONTROL", "Connect WIFI...");
+                esp_wifi_connect();
+                esp_wifi_start();
+                vTaskDelay(pdMS_TO_TICKS(100));
+            }
         }
 
+        vTaskDelay(pdTICKS_TO_MS(1000));
     }
 }
+
+// void logic_task(void *arg) {
+//     bsp_display_init(); 
+//     bsp_display_pro_ui_init();
+//     // 先注释掉传感器读取和 MQTT
+//     // bsp_dht_read(...);
+//     // mqtt_app_start();
+
+//     for (;;) {
+//         ESP_LOGI("DEBUG", "Logic Task Heartbeat...");
+//         vTaskDelay(pdMS_TO_TICKS(1000)); // 每一秒打印一次
+//     }
+// }
 
 void app_main(void)
 {

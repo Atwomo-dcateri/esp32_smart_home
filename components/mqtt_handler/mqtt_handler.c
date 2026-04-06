@@ -4,7 +4,11 @@
 #include "mqtt_client.h"
 #include "esp_system.h"// 只要用到esp_xx.h文件加上准没错
 #include "esp_log.h"
+#include "esp_wifi.h"
 #include "bsp_led.h"
+#include "esp_lvgl_port.h"         // ESP-LVGL 适配层（port）            // 系统接口（保留）
+#include "lvgl.h"                  // LVGL 图形库（lv_obj/lv_label 等）
+#include "bsp_display.h"
 
 #include "mqtt_handler.h"
 
@@ -79,6 +83,12 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
             // ESP_LOGI("MQTT", "Connected to Broker");
             // 订阅主题
             esp_mqtt_client_subscribe(client, "/my_home/led_control", 0);
+            if (lvgl_port_lock(0))
+            {
+                lv_label_set_text(ui_mqtt_icon, LV_SYMBOL_REFRESH);
+                lvgl_port_unlock();
+            }
+
             break;
 
         case MQTT_EVENT_DATA:
@@ -91,13 +101,25 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
                 //bsp_led_set_breath(0);
                 bsp_led_set_smple(0);
                 ESP_LOGI("ACTUATOR", "Cloud Command: LED OFF");
+            } else if (strstr(event->data, "\"W_OFF\"")) {
+                ESP_LOGI("WIFI", "Cloud Command: WIFI OFF");
+                esp_wifi_disconnect();
+                esp_wifi_stop();
+                lv_delay_ms(100);
             }
             break;
-
         case MQTT_EVENT_ERROR:
             ESP_LOGE("MQTT", "Event Error"); 
             break;
+        
+        case MQTT_EVENT_DISCONNECTED:
             
+            if (lvgl_port_lock(0))
+            {
+                lv_label_set_text(ui_mqtt_icon, LV_SYMBOL_CLOSE);
+                lvgl_port_unlock();
+            }
+        
         default:
             break;
     }

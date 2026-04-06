@@ -4,7 +4,9 @@
 #include "freertos/queue.h"
 
 
-#define BIN_GPIO 6
+#define BIN_GPIO1 6
+#define BIN_GPIO2 3
+
 
 extern QueueHandle_t gpio_evt_queue;
 
@@ -21,11 +23,13 @@ void bsp_button_init(void) {
 
         .intr_type = GPIO_INTR_NEGEDGE,
         .mode = GPIO_MODE_INPUT,
-        .pin_bit_mask = (1ULL << BIN_GPIO),
+        .pin_bit_mask = (1ULL << BIN_GPIO1 | 1ULL<< BIN_GPIO2),
         .pull_up_en = 1
     };
+    
 
     gpio_config(&io_conf);
     gpio_install_isr_service(0);
-    gpio_isr_handler_add(BIN_GPIO, gpio_isr_handler, (void *)BIN_GPIO);
+    gpio_isr_handler_add(BIN_GPIO1, gpio_isr_handler, (void *)BIN_GPIO1);
+    gpio_isr_handler_add(BIN_GPIO2, gpio_isr_handler, (void *)BIN_GPIO2);
 }
