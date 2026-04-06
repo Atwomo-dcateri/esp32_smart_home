@@ -20,7 +20,7 @@ lv_obj_t *ui_wifi_icon;
 lv_obj_t *ui_mqtt_icon;
 lv_obj_t *ui_main_cont;
 
-
+bool is_lvgl_ready = false;
 /**
  * @brief 初始化 OLED 显示（I2C + SSD1306）并接入 LVGL Port。
  *
@@ -294,5 +294,6 @@ void bsp_display_pro_ui_init(void) {
 
         lvgl_port_unlock();
         ESP_LOGI("UI", "Pro UI Init Finished"); // 打印这行代表函数顺利跑完
+        is_lvgl_ready = true;
     }
 }

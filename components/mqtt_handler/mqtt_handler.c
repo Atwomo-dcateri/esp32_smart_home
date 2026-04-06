@@ -9,6 +9,7 @@
 #include "esp_lvgl_port.h"         // ESP-LVGL 适配层（port）            // 系统接口（保留）
 #include "lvgl.h"                  // LVGL 图形库（lv_obj/lv_label 等）
 #include "bsp_display.h"
+#include "bsp_storage.h"
 
 #include "mqtt_handler.h"
 
@@ -95,11 +96,14 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
             // 关键：不要在这里做复杂逻辑，只做核心判断
             if (strstr(event->data, "\"ON\"")) {
                 //bsp_led_set_breath(1234);
+                
                 bsp_led_set_smple(1222);
+                last_led_ate = bsp_storage_save_int32("led_power", 1222);
                 ESP_LOGI("ACTUATOR", "Cloud Command: LED ON");
             } else if (strstr(event->data, "\"OFF\"")) {
                 //bsp_led_set_breath(0);
                 bsp_led_set_smple(0);
+                last_led_ate = bsp_storage_save_int32("led_power", 0);
                 ESP_LOGI("ACTUATOR", "Cloud Command: LED OFF");
             } else if (strstr(event->data, "\"W_OFF\"")) {
                 ESP_LOGI("WIFI", "Cloud Command: WIFI OFF");

@@ -10,10 +10,13 @@
 #include "mqtt_handler.h"
 #include "wifi_manger.h"
 #include "bsp_display.h"
+#include "bsp_storage.h"
+
 
 static const char *TAG = "APP_MAIN";
 QueueHandle_t gpio_evt_queue = NULL;
 void oled_show(uint8_t x, uint8_t y, char *buf);
+uint32_t last_led_ate;
 
 static uint8_t wifi_count = 0;
 
@@ -22,6 +25,9 @@ void logic_task(void *arg)
     
     uint32_t io_num;
     float temp, humi;
+    wifi_init_sta(); // 启动wifi
+
+    wifi_wait_connected(); // 等待wifi连接
     bsp_display_init(); // 
     ESP_LOGI(TAG, "Wating for UI...");
     // setup_ui(); //
@@ -43,12 +49,14 @@ void logic_task(void *arg)
                 mqtt_send_sensor_data(temp, humi);
 
                 // char buf[32];
-
+                last_led_ate = bsp_stroge_read_int32("led_power", 1000);
                 bsp_display_update_data(temp, humi);
-
-                bsp_led_set_smple(1000);
+                last_led_ate = bsp_stroge_read_int32("led_power", 0);
+                bsp_led_set_smple(last_led_ate);
+                
                 vTaskDelay(pdMS_TO_TICKS(500));
-                bsp_led_set_smple(0);
+                last_led_ate = bsp_stroge_read_int32("led_power", 0);
+                bsp_led_set_smple(last_led_ate);
             }
 
             if (io_num == 3 && wifi_count == 0)
@@ -97,9 +105,9 @@ void app_main(void)
     }
     ESP_ERROR_CHECK(ret);
     
-    wifi_init_sta(); // 启动wifi
+    // wifi_init_sta(); // 启动wifi
 
-    wifi_wait_connected(); // 等待wifi连接
+    // wifi_wait_connected(); // 等待wifi连接
     bsp_led_init();        // 启动LED
     
     gpio_evt_queue = xQueueCreate(10, sizeof(uint32_t));

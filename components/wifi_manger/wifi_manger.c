@@ -12,6 +12,10 @@
 #include "esp_event.h"   // 必须包含！解决 esp_event_base_t 报错
 #include "esp_wifi.h"
 #include "esp_log.h"
+#include "lvgl.h"
+#include "esp_lvgl_port.h"
+#include "bsp_display.h"
+
 
 /* 业务头文件 */
 #include "wifi_manger.h"
@@ -34,10 +38,22 @@ static void event_handler(void *arg, esp_event_base_t event_base, int32_t event_
         esp_wifi_connect();
     } else if (event_base == WIFI_EVENT && event_id == WIFI_EVENT_STA_DISCONNECTED) {
         ESP_LOGW(TAG, "Connect failed/disconnected. Retrying...");
-        esp_wifi_connect(); // 只有这一行能让它从失败中恢复
-    } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
+        
+        if (is_lvgl_ready && lvgl_port_lock(pdMS_TO_TICKS(100)))
+        {
+            esp_wifi_connect(); // 只有这一行能让它从失败中恢复
+            lv_label_set_text(ui_wifi_icon, LV_SYMBOL_CLOSE);
+            lvgl_port_unlock();
+        }
+        } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
         ip_event_got_ip_t *event = (ip_event_got_ip_t *)event_data;
         ESP_LOGI(TAG, "GOT_IP: " IPSTR, IP2STR(&event->ip_info.ip));
+        if (is_lvgl_ready && lvgl_port_lock(pdMS_TO_TICKS(100)))
+        {
+            lv_label_set_text(ui_wifi_icon, LV_SYMBOL_WIFI);
+            lvgl_port_unlock();
+        }
+
         xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTION_BIT);
     }
 }

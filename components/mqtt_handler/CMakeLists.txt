@@ -8,5 +8,6 @@ idf_component_register(
         esp_lvgl_port 
         ssd1306
         bsp_display
-        wifi_manger
+        esp_wifi
+        bsp_storage
 )
