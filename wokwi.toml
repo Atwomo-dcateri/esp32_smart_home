@@ -3,3 +3,5 @@
 version = 1
 firmware = 'build/flasher_args.json'
 elf = 'build/esp32_smart_home1.elf'
+[net]
+gateway = "ws://127.0.0.1:9011"

@@ -4,4 +4,7 @@ idf_component_register(
     REQUIRES
         freertos
         esp_wifi
+        esp_lvgl_port
+        lvgl
+        bsp_display
 )
