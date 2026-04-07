@@ -81,15 +81,17 @@ void validate_image_at_boot(void) {
     }
 }
 
-/// @brief OTA_下载更新
+/// @brief OTA_下载更新 
 /// @param pvParameter 
-void ota_uppdate_task(void *pvParameter) {
+void ota_update_task(void *pvParameter) {
 
     ESP_LOGI("OTA", "Starting HTTPS OTA update...");
     esp_http_client_config_t http_cfg = {
-        .url = "http://your-server.com/esp32.1.0.2.bin",
-        .crt_bundle_attach = esp_crt_bundle_attach,
+        .url = OTA_URL,
+        .crt_bundle_attach = NULL,
+        .skip_cert_common_name_check = true,
         .keep_alive_enable = true,
+        .timeout_ms = 10000
     };
 
     esp_https_ota_config_t ota_cfg = {

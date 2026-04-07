@@ -100,7 +100,7 @@ void logic_task(void *arg) {
         lv_label_set_text_fmt(ui_temp_label, "Ver: %s", CURRENT_VERSION);
         lvgl_port_unlock();
     }
-    
+
     for (;;) {
         // 1. 等待队列，不耗 CPU。一旦按下按键，立刻唤醒。
         if (xQueueReceive(gpio_evt_queue, &io_num, portMAX_DELAY)) {
@@ -162,13 +162,9 @@ void app_main(void)
     gpio_evt_queue = xQueueCreate(10, sizeof(uint32_t));
 
     bsp_button_init(); // 启动按键
-
     
-
     xTaskCreate(logic_task, "logic_task", 8192, NULL, 10, NULL);
     ESP_LOGI(TAG, "Smart Home Terminal Ready. Press the Button to Sample.");
-
-    
 }
 
 
