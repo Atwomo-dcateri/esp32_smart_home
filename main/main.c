@@ -20,79 +20,118 @@ uint32_t last_led_ate;
 
 static uint8_t wifi_count = 0;
 
-void logic_task(void *arg)
-{
+// void logic_task(void *arg)
+// {
     
+//     uint32_t io_num;
+//     float temp, humi;
+//     wifi_init_sta(); // 启动wifi
+
+//     wifi_wait_connected(); // 等待wifi连接
+//     bsp_display_init(); // 
+//     ESP_LOGI(TAG, "Wating for UI...");
+//     // setup_ui(); //
+//     bsp_display_pro_ui_init();
+//     ESP_LOGI(TAG, "Wating for WiFi...");
+
+//     mqtt_app_start();
+
+//     for (;;)
+//     {
+        
+//         //if (xQueueReceive(gpio_evt_queue, &io_num, pdTICKS_TO_MS(100)))
+//         if (xQueueReceive(gpio_evt_queue, &io_num, portMAX_DELAY))
+//         {
+//             if (bsp_dht_read(&temp, &humi) == ESP_OK)
+//             {
+//                 ESP_LOGW(TAG, "Local Read -> T:%.1f, H:%.1f", temp, humi);
+
+//                 mqtt_send_sensor_data(temp, humi);
+
+//                 // char buf[32];
+//                 last_led_ate = bsp_stroge_read_int32("led_power", 1000);
+//                 bsp_display_update_data(temp, humi);
+//                 last_led_ate = bsp_stroge_read_int32("led_power", 0);
+//                 bsp_led_set_smple(last_led_ate);
+                
+//                 vTaskDelay(pdMS_TO_TICKS(500));
+//                 last_led_ate = bsp_stroge_read_int32("led_power", 0);
+//                 bsp_led_set_smple(last_led_ate);
+//             }
+
+//             if (io_num == 3 && wifi_count == 0)
+//             {
+//                 wifi_count = 1;
+//                 ESP_LOGI("WIFI CONTROL", "Stop WIFI...");
+//                 esp_wifi_disconnect();
+//                 esp_wifi_stop();
+//                 vTaskDelay(pdMS_TO_TICKS(100));
+//             }
+//             else if (io_num == 3 && wifi_count == 1)
+//             {
+//                 wifi_count = 0;
+//                 ESP_LOGI("WIFI CONTROL", "Connect WIFI...");
+//                 esp_wifi_connect();
+//                 esp_wifi_start();
+//                 vTaskDelay(pdMS_TO_TICKS(100));
+//             }
+//         }
+
+//         vTaskDelay(pdTICKS_TO_MS(1000));
+//     }
+// }
+
+void logic_task(void *arg) {
     uint32_t io_num;
     float temp, humi;
-    wifi_init_sta(); // 启动wifi
-
-    wifi_wait_connected(); // 等待wifi连接
-    bsp_display_init(); // 
-    ESP_LOGI(TAG, "Wating for UI...");
-    // setup_ui(); //
+    
+    wifi_init_sta();
+    wifi_wait_connected();
+    bsp_display_init();
     bsp_display_pro_ui_init();
-    ESP_LOGI(TAG, "Wating for WiFi...");
-
     mqtt_app_start();
 
-    for (;;)
-    {
-        
-        //if (xQueueReceive(gpio_evt_queue, &io_num, pdTICKS_TO_MS(100)))
-        if (xQueueReceive(gpio_evt_queue, &io_num, portMAX_DELAY))
-        {
-            if (bsp_dht_read(&temp, &humi) == ESP_OK)
-            {
-                ESP_LOGW(TAG, "Local Read -> T:%.1f, H:%.1f", temp, humi);
+    for (;;) {
+        // 1. 等待队列，不耗 CPU。一旦按下按键，立刻唤醒。
+        if (xQueueReceive(gpio_evt_queue, &io_num, portMAX_DELAY)) {
+            
+            // 针对 IO3 的 WiFi 开关逻辑
+            if (io_num == 3) {
+                if (wifi_count == 0) {
+                    wifi_count = 1;
+                    ESP_LOGW("WIFI", "Manual Stop...");
+                    esp_wifi_disconnect();
+                    esp_wifi_stop();
+                } else {
+                    wifi_count = 0;
+                    ESP_LOGI("WIFI", "Manual Start...");
+                    esp_wifi_start(); // 注意顺序，先 start 再 connect
+                    esp_wifi_connect();
+                }
+                continue; // 跳过本次循环后续的传感器读取，避免网络关闭时发 MQTT
+            }
 
-                mqtt_send_sensor_data(temp, humi);
-
-                // char buf[32];
-                last_led_ate = bsp_stroge_read_int32("led_power", 1000);
-                bsp_display_update_data(temp, humi);
-                last_led_ate = bsp_stroge_read_int32("led_power", 0);
-                bsp_led_set_smple(last_led_ate);
+            // 针对其他逻辑（比如读取温湿度）
+            if (bsp_dht_read(&temp, &humi) == ESP_OK) {
+                ESP_LOGI(TAG, "T:%.1f, H:%.1f", temp, humi);
                 
-                vTaskDelay(pdMS_TO_TICKS(500));
+                // 只有 WiFi 在线时才发 MQTT，防止任务阻塞
+                if (wifi_count == 0) {
+                    mqtt_send_sensor_data(temp, humi); // 主要的阻塞原因
+                }
+
+                // 更新 UI
+                bsp_display_update_data(temp, humi);
+                
+                // 恢复 LED 状态等逻辑...
                 last_led_ate = bsp_stroge_read_int32("led_power", 0);
                 bsp_led_set_smple(last_led_ate);
-            }
-
-            if (io_num == 3 && wifi_count == 0)
-            {
-                wifi_count = 1;
-                ESP_LOGI("WIFI CONTROL", "Stop WIFI...");
-                esp_wifi_disconnect();
-                esp_wifi_stop();
-                vTaskDelay(pdMS_TO_TICKS(100));
-            }
-            else if (io_num == 3 && wifi_count == 1)
-            {
-                wifi_count = 0;
-                ESP_LOGI("WIFI CONTROL", "Connect WIFI...");
-                esp_wifi_connect();
-                esp_wifi_start();
-                vTaskDelay(pdMS_TO_TICKS(100));
             }
         }
-
-        vTaskDelay(pdTICKS_TO_MS(1000));
+        // 删掉底部的 vTaskDelay，交给 Queue 去同步时间
     }
 }
 
-// void logic_task(void *arg) {
-//     bsp_display_init(); 
-//     bsp_display_pro_ui_init();
-//     // 先注释掉传感器读取和 MQTT
-//     // bsp_dht_read(...);
-//     // mqtt_app_start();
-
-//     for (;;) {
-//         ESP_LOGI("DEBUG", "Logic Task Heartbeat...");
-//         vTaskDelay(pdMS_TO_TICKS(1000)); // 每一秒打印一次
-//     }
-// }
 
 void app_main(void)
 {

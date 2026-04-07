@@ -24,6 +24,7 @@ static const char *TAG = "OTA_UPDATE";
 #define OTA_URL "http://your-server.com/fireware.bin"
 
 
+
 void ota_task(void *pvParameter) {
 
     ESP_LOGI(TAG, "Starting OTA update...");

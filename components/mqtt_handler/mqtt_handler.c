@@ -111,7 +111,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
                 esp_wifi_disconnect();
                 esp_wifi_stop();
                 lv_delay_ms(100);
-            } else if(strncmp(event->data, "UPDATE", event->data_len)) {
+            } else if(strncmp(event->data, "UPDATE", event->data_len) == 0) {
 
                 if (lvgl_port_lock(0))
                 {
