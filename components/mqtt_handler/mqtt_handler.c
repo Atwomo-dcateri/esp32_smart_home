@@ -119,7 +119,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
                     lvgl_port_unlock();
                 }
 
-                xTaskCreate(&ota_task, "ota_task", 8192, NULL, 5, NULL);
+                xTaskCreate(&ota_uppdate_task, "ota_upadte_task", 8192, NULL, 5, NULL);
             }
             break;
         case MQTT_EVENT_ERROR:

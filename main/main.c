@@ -11,6 +11,7 @@
 #include "wifi_manger.h"
 #include "bsp_display.h"
 #include "bsp_storage.h"
+#include "esp_http_ota.h"
 
 
 static const char *TAG = "APP_MAIN";
@@ -91,6 +92,15 @@ void logic_task(void *arg) {
     bsp_display_pro_ui_init();
     mqtt_app_start();
 
+    // OTA检测更新
+    validate_image_at_boot();
+
+    if (lvgl_port_lock(pdMS_TO_TICKS(100)) && is_lvgl_ready)
+    {
+        lv_label_set_text_fmt(ui_temp_label, "Ver: %s", CURRENT_VERSION);
+        lvgl_port_unlock();
+    }
+    
     for (;;) {
         // 1. 等待队列，不耗 CPU。一旦按下按键，立刻唤醒。
         if (xQueueReceive(gpio_evt_queue, &io_num, portMAX_DELAY)) {
@@ -153,8 +163,12 @@ void app_main(void)
 
     bsp_button_init(); // 启动按键
 
+    
+
     xTaskCreate(logic_task, "logic_task", 8192, NULL, 10, NULL);
     ESP_LOGI(TAG, "Smart Home Terminal Ready. Press the Button to Sample.");
+
+    
 }
 
 

@@ -21,10 +21,6 @@
 
 static const char *TAG = "OTA_UPDATE";
 
-#define OTA_URL "http://your-server.com/fireware.bin"
-
-
-
 void ota_task(void *pvParameter) {
 
     ESP_LOGI(TAG, "Starting OTA update...");
@@ -51,4 +47,65 @@ void ota_task(void *pvParameter) {
     }
 }
 
- 
+
+bool system_self_test(void) {
+
+    ESP_LOGI("SELF_TEST", "Running system self-test...");
+    vTaskDelay(pdMS_TO_TICKS(100));
+    return true;
+}
+
+
+/// @brief 验证与取消回滚
+/// @param  
+void validate_image_at_boot(void) {
+
+    const esp_partition_t *running = esp_ota_get_running_partition();
+    esp_ota_img_states_t ota_state;
+
+    if (esp_ota_get_state_partition(running, &ota_state) == ESP_OK)
+    {
+        if (ota_state == ESP_OTA_IMG_PENDING_VERIFY)
+        {
+            if (system_self_test())
+            {
+                ESP_LOGI("OTA", "Self-test passed! Marking image as valid.");
+                esp_ota_mark_app_valid_cancel_rollback(); // 认为有效取消回滚
+            }
+        } else {
+
+            ESP_LOGI("OTA", "Self-test failed Rolling backing...");
+            esp_ota_mark_app_invalid_rollback_and_reboot(); // 立即回滚并重启
+
+        }
+    }
+}
+
+/// @brief OTA_下载更新
+/// @param pvParameter 
+void ota_uppdate_task(void *pvParameter) {
+
+    ESP_LOGI("OTA", "Starting HTTPS OTA update...");
+    esp_http_client_config_t http_cfg = {
+        .url = "http://your-server.com/esp32.1.0.2.bin",
+        .crt_bundle_attach = esp_crt_bundle_attach,
+        .keep_alive_enable = true,
+    };
+
+    esp_https_ota_config_t ota_cfg = {
+
+        .http_config = &http_cfg
+    };
+
+    esp_err_t ret = esp_https_ota(&ota_cfg);
+    if (ret == ESP_OK)
+    {
+        ESP_LOGI("OTA", "Download complete. Rebooting in 3s...");
+        vTaskDelay(pdMS_TO_TICKS(3000));
+        esp_restart();
+    } else {
+
+        ESP_LOGI("OTA", "OTA failed! Error code: 0x%x", ret);
+        vTaskDelete(NULL);
+    }
+}

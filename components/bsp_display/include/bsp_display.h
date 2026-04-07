@@ -23,6 +23,7 @@ extern lv_obj_t *ui_mqtt_icon;
 extern lv_obj_t *ui_wifi_icon;
 extern bool is_lvgl_ready;
 extern lv_obj_t *ui_temp_label;
+extern lv_obj_t *ui_main_cont;
 
 void bsp_display_init();
 void setup_ui(void);
